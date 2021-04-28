@@ -1,25 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
+    android:orientation="vertical"
     android:layout_height="match_parent">
 
-    <androidx.viewpager2.widget.ViewPager2
-        android:id="@+id/viewpager"
+
+    <TextView
+        android:id="@+id/tiktok"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context=".MainActivity" />
-
-    <Button
-        android:id="@+id/second"
-        android:layout_width="wrap_content"
-        android:text="go to second"
+        android:padding="15dp"
+        android:text="TikTok Live"
+        android:textStyle="bold"
+        android:textSize="18sp"
+        android:textColor="@color/black"
         android:layout_height="wrap_content" />
 
-    <Button
-        android:layout_gravity="end"
-        android:id="@+id/third"
-        android:layout_width="wrap_content"
-        android:text="go to third"
+    <View
+        android:layout_width="match_parent"
+        android:background="#ededed"
+        android:layout_height="0.5dp" />
+
+    <TextView
+        android:id="@+id/viewpage2"
+        android:layout_width="match_parent"
+        android:padding="15dp"
+        android:text="ViewPager2"
+        android:textStyle="bold"
+        android:textSize="18sp"
+        android:textColor="@color/black"
         android:layout_height="wrap_content" />
-</FrameLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:background="#ededed"
+        android:layout_height="0.5dp" />
+
+    <TextView
+        android:id="@+id/normal"
+        android:layout_width="match_parent"
+        android:padding="15dp"
+        android:text="normal"
+        android:textStyle="bold"
+        android:textSize="18sp"
+        android:textColor="@color/black"
+        android:layout_height="wrap_content" />
+
+</LinearLayout>

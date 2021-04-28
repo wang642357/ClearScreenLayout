@@ -2,26 +2,21 @@ package com.wjx.android.clearscreenlayout;
 
 import android.os.Bundle;
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.viewpager2.widget.ViewPager2;
-
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * 作者：wangjianxiong
- * 创建时间：2021/4/27
- */
-public class ThirdActivity extends AppCompatActivity {
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.viewpager2.widget.ViewPager2;
+
+public class ViewPager2Activity extends AppCompatActivity {
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_third);
+        setContentView(R.layout.activity_viewpager2);
         ViewPager2 list = findViewById(R.id.viewpager);
         list.setOrientation(ViewPager2.ORIENTATION_VERTICAL);
-        list.setAdapter(new MyAdapter2(getList()));
+        list.setAdapter(new MyAdapter(getList()));
     }
 
     private List<String> getList() {

@@ -4,12 +4,13 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 
+import com.wjx.android.clearscreen.ClearScreenLayout;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.wjx.android.clearscreen.ClearScreenLayout;
+public class NormalActivity extends AppCompatActivity {
 
-public class SecondActivity extends AppCompatActivity {
     private static final String TAG = "SecondActivity";
 
     @Override

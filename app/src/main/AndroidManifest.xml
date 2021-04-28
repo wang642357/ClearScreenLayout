@@ -16,8 +16,9 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".SecondActivity" />
-        <activity android:name=".ThirdActivity" />
+        <activity android:name=".NormalActivity" />
+        <activity android:name=".ViewPager2Activity" />
+        <activity android:name=".TikTokLiveActivity" />
     </application>
 
 </manifest>

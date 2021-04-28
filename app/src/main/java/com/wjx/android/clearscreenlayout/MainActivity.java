@@ -3,46 +3,40 @@ package com.wjx.android.clearscreenlayout;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
-import android.widget.Button;
+import android.widget.TextView;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.viewpager2.widget.ViewPager2;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public class MainActivity extends AppCompatActivity {
+/**
+ * 作者：wangjianxiong 创建时间：2021/4/28
+ */
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ViewPager2 list = findViewById(R.id.viewpager);
-        list.setOrientation(ViewPager2.ORIENTATION_VERTICAL);
-        Button button = findViewById(R.id.second);
-        Button third = findViewById(R.id.third);
-        list.setAdapter(new MyAdapter(getList()));
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, SecondActivity.class);
-                startActivity(intent);
-            }
-        });
-        third.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, ThirdActivity.class);
-                startActivity(intent);
-            }
-        });
+        TextView tiktokLive = findViewById(R.id.tiktok);
+        TextView viewpage2 = findViewById(R.id.viewpage2);
+        TextView normal = findViewById(R.id.normal);
+        tiktokLive.setOnClickListener(this);
+        viewpage2.setOnClickListener(this);
+        normal.setOnClickListener(this);
     }
 
-    private List<String> getList() {
-        List<String> list = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
-            list.add("我是内容$i");
+    @Override
+    public void onClick(View v) {
+        int id = v.getId();
+        if (id == R.id.tiktok) {
+            Intent intent = new Intent(MainActivity.this, TikTokLiveActivity.class);
+            startActivity(intent);
+        } else if (id == R.id.viewpage2) {
+            Intent intent = new Intent(MainActivity.this, ViewPager2Activity.class);
+            startActivity(intent);
+        } else if (id == R.id.normal) {
+            Intent intent = new Intent(MainActivity.this, NormalActivity.class);
+            startActivity(intent);
         }
-        return list;
     }
 }
