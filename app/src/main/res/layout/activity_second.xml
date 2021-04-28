@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.wjx.android.clearscreen.ClearScreenLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:id="@+id/clear_screen"
+    android:layout_height="match_parent">
+
+    <FrameLayout
+        android:id="@+id/container1"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#55000000">
+
+        <TextView
+            android:id="@+id/content"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="我是内容布局"
+            android:textColor="@color/black" />
+
+        <TextView
+            android:layout_gravity="end"
+            android:background="#5500ff00"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:textColor="@color/black"
+            android:gravity="center"
+            android:layout_width="200dp"
+            android:text="end edge range"
+            android:layout_height="match_parent" />
+
+    </FrameLayout>
+
+
+    <RelativeLayout
+        android:id="@+id/container2"
+        android:layout_marginStart="30dp"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_dragEnable="true">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="30dp"
+            android:background="#ff00ff"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:text="顶部文案顶部文案顶部文案顶部文案顶部文案顶部文案"
+            android:textColor="@color/black"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="30dp"
+            android:background="#0000ff"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:text="底部文案底部文案底部文案底部文案底部文案"
+            android:textColor="@color/black"
+            android:textStyle="bold" />
+
+    </RelativeLayout>
+
+</com.wjx.android.clearscreen.ClearScreenLayout>
