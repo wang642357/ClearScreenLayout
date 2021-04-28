@@ -364,10 +364,7 @@ public class ClearScreenLayout extends ViewGroup {
 
         @Override
         public void onViewReleased(@NonNull View releasedChild, float xvel, float yvel) {
-            final float offset = getDragViewOffset(releasedChild);
-            final int childWidth = releasedChild.getWidth();
             int childLeft = releasedChild.getLeft();
-            final int width = getWidth();
             //int left = xvel < 0 || (xvel == 0 && offset > 0.3f) ? width - childWidth : width;
             if (isSlideOut(releasedChild)) {
                 slideInOrOut(releasedChild, childLeft, getWidth() * 4 / 5);
