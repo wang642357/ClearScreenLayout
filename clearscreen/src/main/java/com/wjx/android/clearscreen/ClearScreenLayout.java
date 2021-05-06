@@ -9,14 +9,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 
+import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
+import androidx.core.view.ViewCompat;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
-
-import androidx.annotation.IntDef;
-import androidx.annotation.NonNull;
-import androidx.core.view.ViewCompat;
 
 
 /**
@@ -459,8 +459,9 @@ public class ClearScreenLayout extends ViewGroup {
 
         @Override
         public int clampViewPositionHorizontal(@NonNull View child, int left, int dx) {
-            int paddingStart = getPaddingStart();
-            return Math.max(left, paddingStart);
+            //设置左侧边界
+            final int width = getWidth();
+            return Math.max(width - child.getWidth(), Math.min(left, width));
         }
 
         @Override
