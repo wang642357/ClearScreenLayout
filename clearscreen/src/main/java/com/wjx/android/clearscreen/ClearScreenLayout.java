@@ -9,28 +9,50 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 
-import androidx.annotation.IntDef;
-import androidx.annotation.NonNull;
-import androidx.core.view.ViewCompat;
-
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 
+import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
+import androidx.core.view.ViewCompat;
+
 
 /**
- * 作者：wangjianxiong
- * 创建时间：2021/4/27
+ * 作者：wangjianxiong 创建时间：2021/4/27 一个支持拖动顶部遮罩层的ViewGroup
  */
 public class ClearScreenLayout extends ViewGroup {
 
+    private static final String TAG = "ClearScreenLayout";
+
+    private static final boolean DEBUG = true;
+
     private final ViewDragHelper mViewDragHelper;
+
     private List<DragListener> mListeners;
+
     private int mDragState;
+
+    private float mInitialMotionX;
+
+    private float mInitialMotionY;
+
     private float mLastMotionX;
+
     private float mLastMotionY;
-    private int touchSlop;
+
+    private int mTouchSlop;
+
+    private int mActivePointerId = INVALID_POINTER;
+
+    private static final int X_VEL = 2500;
+
+    /**
+     * Sentinel value for no current active pointer. Used by {@link #mActivePointerId}.
+     */
+    private static final int INVALID_POINTER = -1;
+
     /**
      * Indicates that any drawers are in an idle, settled state. No animation is in progress.
      */
@@ -45,14 +67,16 @@ public class ClearScreenLayout extends ViewGroup {
      * Indicates that a drawer is in the process of settling to a final position.
      */
     public static final int STATE_SETTLING = ViewDragHelper.STATE_SETTLING;
+
     /**
      * Minimum velocity that will be detected as a fling
      */
-    private static final int MIN_FLING_VELOCITY = 400;
+    private static final int MIN_FLING_VELOCITY = 600;
 
     @IntDef({STATE_IDLE, STATE_DRAGGING, STATE_SETTLING})
     @Retention(RetentionPolicy.SOURCE)
     private @interface State {
+
     }
 
     public interface DragListener {
@@ -97,19 +121,21 @@ public class ClearScreenLayout extends ViewGroup {
 
     public ClearScreenLayout(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        setDescendantFocusability(ViewGroup.FOCUS_AFTER_DESCENDANTS);
-
+        setWillNotDraw(false);
+        setDescendantFocusability(FOCUS_AFTER_DESCENDANTS);
+        setFocusable(true);
         TypedArray a = context.obtainStyledAttributes(attrs, R.styleable.ClearScreenLayout);
         float sensitivity = a.getFloat(R.styleable.ClearScreenLayout_touch_slop_sensitivity, 2.0f);
         a.recycle();
         final float density = getResources().getDisplayMetrics().density;
         final float minVel = MIN_FLING_VELOCITY * density;
 
+        int edgeSize = ClearScreenUtils.getScreenWidth(context);
         ViewDragCallback viewDragCallback = new ViewDragCallback();
-        mViewDragHelper = ViewDragHelper.create(this, sensitivity, viewDragCallback);
+        mViewDragHelper = ViewDragHelper.create(this, sensitivity, edgeSize, viewDragCallback);
         mViewDragHelper.setEdgeTrackingEnabled(ViewDragHelper.EDGE_RIGHT);
         mViewDragHelper.setMinVelocity(minVel);
-        touchSlop = mViewDragHelper.getTouchSlop();
+        mTouchSlop = mViewDragHelper.getTouchSlop();
         viewDragCallback.setDragger(mViewDragHelper);
     }
 
@@ -172,7 +198,6 @@ public class ClearScreenLayout extends ViewGroup {
 
         if (activeView != null && activeState == STATE_IDLE) {
             final LayoutParams lp = (LayoutParams) activeView.getLayoutParams();
-            Log.e("updateDragState", "lp.onScreen:" + lp.onScreen);
             if (lp.onScreen == 0) {
                 dispatchDragToOutState(activeView);
             } else if (lp.onScreen == 1) {
@@ -207,8 +232,10 @@ public class ClearScreenLayout extends ViewGroup {
             contentHeight = Math.max(contentHeight, child.getMeasuredHeight());
             contentWidth = Math.max(contentWidth, child.getMeasuredWidth());
         }
-        setMeasuredDimension(measureSize(widthMeasureSpec, contentWidth + getPaddingStart() + getPaddingEnd()),
-                measureSize(heightMeasureSpec, contentHeight + getPaddingTop() + getPaddingBottom()));
+        setMeasuredDimension(
+                measureSize(widthMeasureSpec, contentWidth + getPaddingStart() + getPaddingEnd()),
+                measureSize(heightMeasureSpec,
+                        contentHeight + getPaddingTop() + getPaddingBottom()));
     }
 
     private int measureSize(int measureSpec, int size) {
@@ -250,37 +277,76 @@ public class ClearScreenLayout extends ViewGroup {
 
     @Override
     public boolean onInterceptTouchEvent(MotionEvent ev) {
-        return mViewDragHelper.shouldInterceptTouchEvent(ev);
+        int action = ev.getActionMasked();
+        boolean interceptTouchEvent = mViewDragHelper.shouldInterceptTouchEvent(ev);
+        boolean interceptTapFlag = false;
+        switch (action) {
+            case MotionEvent.ACTION_DOWN:
+                mActivePointerId = ev.getPointerId(0);
+                mLastMotionX = mInitialMotionX = ev.getX();
+                mLastMotionY = mInitialMotionY = ev.getY();
+                break;
+            case MotionEvent.ACTION_MOVE:
+                final int activePointerId = mActivePointerId;
+                if (activePointerId == INVALID_POINTER) {
+                    break;
+                }
+                final int pointerIndex = ev.findPointerIndex(activePointerId);
+                final float x = ev.getX(pointerIndex);
+                final float dx = x - mLastMotionX;
+                final float xDiff = Math.abs(dx);
+                final float y = ev.getY(pointerIndex);
+                final float yDiff = Math.abs(y - mInitialMotionY);
+                if (xDiff > mTouchSlop && xDiff * 0.5f > yDiff) {
+                    requestParentDisallowInterceptTouchEvent(true);
+                    mLastMotionX = dx > 0
+                            ? mInitialMotionX + mTouchSlop : mInitialMotionX - mTouchSlop;
+                    mLastMotionY = y;
+                }
+                break;
+        }
+        return interceptTouchEvent || interceptTapFlag;
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        mViewDragHelper.processTouchEvent(event);
-        switch (event.getAction()) {
+    public boolean onTouchEvent(MotionEvent ev) {
+        mViewDragHelper.processTouchEvent(ev);
+        switch (ev.getAction()) {
             case MotionEvent.ACTION_DOWN:
-                mLastMotionX = event.getX();
-                mLastMotionY = event.getY();
+                mLastMotionX = mInitialMotionX = ev.getX();
+                mLastMotionY = mInitialMotionY = ev.getY();
                 break;
             case MotionEvent.ACTION_MOVE:
-                float x = event.getX();
+                float x = ev.getX();
                 final float xDiff = Math.abs(x - mLastMotionX);
-                float y = event.getY();
+                float y = ev.getY();
                 final float yDiff = Math.abs(y - mLastMotionY);
-                Log.v("onTouchEvent", "Moved x to " + x + "," + y + " diff=" + xDiff + "," + yDiff);
-                if (xDiff < touchSlop && xDiff > yDiff) {
-                    ViewParent parent = getParent();
-                    if (parent != null) {
-                        parent.requestDisallowInterceptTouchEvent(true);
-                    }
+                if (DEBUG) {
+                    Log.v("onTouchEvent",
+                            "Moved x to " + x + "," + y + " diff=" + xDiff + "," + yDiff);
+                }
+                if (xDiff > mTouchSlop && xDiff > yDiff) {
+                    requestParentDisallowInterceptTouchEvent(true);
+                    mLastMotionX = x - mInitialMotionX > 0 ? mInitialMotionX + mTouchSlop :
+                            mInitialMotionX - mTouchSlop;
+                    mLastMotionY = y;
                 }
                 break;
         }
         return true;
     }
 
+    private void requestParentDisallowInterceptTouchEvent(boolean disallowIntercept) {
+        final ViewParent parent = getParent();
+        if (parent != null) {
+            parent.requestDisallowInterceptTouchEvent(disallowIntercept);
+        }
+    }
+
     @Override
     protected ViewGroup.LayoutParams generateDefaultLayoutParams() {
-        return new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        return new LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
     }
 
     @Override
@@ -293,8 +359,8 @@ public class ClearScreenLayout extends ViewGroup {
         return p instanceof LayoutParams
                 ? new LayoutParams((LayoutParams) p)
                 : p instanceof ViewGroup.MarginLayoutParams
-                ? new LayoutParams((MarginLayoutParams) p)
-                : new LayoutParams(p);
+                        ? new LayoutParams((MarginLayoutParams) p)
+                        : new LayoutParams(p);
     }
 
     @Override
@@ -366,11 +432,37 @@ public class ClearScreenLayout extends ViewGroup {
         public void onViewReleased(@NonNull View releasedChild, float xvel, float yvel) {
             int childLeft = releasedChild.getLeft();
             //int left = xvel < 0 || (xvel == 0 && offset > 0.3f) ? width - childWidth : width;
-            if (isSlideOut(releasedChild)) {
-                slideInOrOut(releasedChild, childLeft, getWidth() * 4 / 5);
-            } else {
-                slideInOrOut(releasedChild, childLeft, getWidth() / 5);
+            //当手指在x轴上滑动的速度足够快时，直接slide,xvel < 0 往左滑，xvel > 0往右滑
+            if (DEBUG) {
+                Log.e(TAG, "onViewReleased: " + xvel);
             }
+            if (isSlideOut(releasedChild)) {
+                if (xvel < 0 && xvel < -X_VEL) {
+                    mDragger.settleCapturedViewAt(
+                            ((LayoutParams) releasedChild.getLayoutParams()).getMarginStart(), 0);
+                } else {
+                    if (childLeft > getWidth() * 4 / 5) {
+                        mDragger.settleCapturedViewAt(getWidth(), 0);
+                    } else {
+                        mDragger.settleCapturedViewAt(
+                                ((LayoutParams) releasedChild.getLayoutParams()).getMarginStart(),
+                                0);
+                    }
+                }
+            } else {
+                if (xvel > X_VEL) {
+                    mDragger.settleCapturedViewAt(getWidth(), 0);
+                } else {
+                    if (childLeft > getWidth() / 5) {
+                        mDragger.settleCapturedViewAt(getWidth(), 0);
+                    } else {
+                        mDragger.settleCapturedViewAt(
+                                ((LayoutParams) releasedChild.getLayoutParams()).getMarginStart(),
+                                0);
+                    }
+                }
+            }
+            invalidate();
         }
 
         @Override
@@ -394,7 +486,8 @@ public class ClearScreenLayout extends ViewGroup {
         }
 
         @Override
-        public void onViewPositionChanged(@NonNull View changedView, int left, int top, int dx, int dy) {
+        public void onViewPositionChanged(@NonNull View changedView, int left, int top, int dx,
+                int dy) {
             final int childWidth = changedView.getWidth();
             final int width = getWidth();
             float offset = (float) (width - left) / childWidth;
@@ -407,20 +500,14 @@ public class ClearScreenLayout extends ViewGroup {
         public void onViewDragStateChanged(int state) {
             updateDragState(state, mDragger.getCapturedView());
         }
-
-        private void slideInOrOut(View releasedChild, int finalLeft, int criticalValue) {
-            if (finalLeft > criticalValue) {
-                mDragger.settleCapturedViewAt(getWidth(), 0);
-            } else {
-                mDragger.settleCapturedViewAt(((LayoutParams) releasedChild.getLayoutParams()).getMarginStart(), 0);
-            }
-            invalidate();
-        }
     }
 
     public static class LayoutParams extends MarginLayoutParams {
+
         public boolean isDrag;
+
         public boolean isSlideOut;
+
         public float onScreen;
 
         public LayoutParams(Context c, AttributeSet attrs) {
