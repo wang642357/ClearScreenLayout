@@ -398,6 +398,10 @@ public class ClearScreenLayout extends ViewGroup {
         }
     }
 
+    boolean isContentView(View child) {
+        return !((LayoutParams) child.getLayoutParams()).isDrag;
+    }
+
     boolean isSlideOut(View dragView) {
         return ((LayoutParams) dragView.getLayoutParams()).isSlideOut;
     }
@@ -462,6 +466,11 @@ public class ClearScreenLayout extends ViewGroup {
         @Override
         public int clampViewPositionVertical(@NonNull View child, int top, int dy) {
             return child.getTop();
+        }
+
+        @Override
+        public int getViewHorizontalDragRange(@NonNull View child) {
+            return !isContentView(child) ? child.getWidth() : 0;
         }
 
         @Override
