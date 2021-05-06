@@ -221,37 +221,25 @@ public class ClearScreenLayout extends ViewGroup {
 
     @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int contentWidth = 0;
-        int contentHeight = 0;
+        int widthMode = MeasureSpec.getMode(widthMeasureSpec);
+        int heightMode = MeasureSpec.getMode(heightMeasureSpec);
+        int widthSize = MeasureSpec.getSize(widthMeasureSpec);
+        int heightSize = MeasureSpec.getSize(heightMeasureSpec);
+        if (widthMode == MeasureSpec.AT_MOST) {
+            widthMeasureSpec = MeasureSpec.makeMeasureSpec(widthSize, MeasureSpec.EXACTLY);
+        }
+        if (heightMode == MeasureSpec.AT_MOST) {
+            heightMeasureSpec = MeasureSpec.makeMeasureSpec(heightSize, MeasureSpec.EXACTLY);
+        }
+        setMeasuredDimension(getDefaultSize(0, widthMeasureSpec),
+                getDefaultSize(0, heightMeasureSpec));
         for (int i = 0; i < getChildCount(); i++) {
             View child = getChildAt(i);
             if (child.getVisibility() == View.GONE) {
                 continue;
             }
             measureChildWithMargins(child, widthMeasureSpec, 0, heightMeasureSpec, 0);
-            contentHeight = Math.max(contentHeight, child.getMeasuredHeight());
-            contentWidth = Math.max(contentWidth, child.getMeasuredWidth());
         }
-        setMeasuredDimension(
-                measureSize(widthMeasureSpec, contentWidth + getPaddingStart() + getPaddingEnd()),
-                measureSize(heightMeasureSpec,
-                        contentHeight + getPaddingTop() + getPaddingBottom()));
-    }
-
-    private int measureSize(int measureSpec, int size) {
-        int specMode = MeasureSpec.getMode(measureSpec);
-        int specSize = MeasureSpec.getSize(measureSpec);
-        int result;
-        if (specMode == MeasureSpec.EXACTLY) {
-            result = specSize;
-        } else {
-            if (specMode == MeasureSpec.AT_MOST) {
-                result = Math.min(size, specSize);
-            } else {
-                result = size;
-            }
-        }
-        return result;
     }
 
     @Override
