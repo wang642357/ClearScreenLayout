@@ -9,14 +9,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 
-import androidx.annotation.IntDef;
-import androidx.annotation.NonNull;
-import androidx.core.view.ViewCompat;
-
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
+
+import androidx.annotation.IntDef;
+import androidx.annotation.NonNull;
+import androidx.core.view.ViewCompat;
 
 
 /**
@@ -46,32 +46,36 @@ public class ClearScreenLayout extends ViewGroup {
 
     private int mActivePointerId = INVALID_POINTER;
 
-    private static final int X_VEL = 2500;
+    private static final int X_VEL = 2000;
+
+    private static final float RIGHT_RANG_SIZE = 0.2f;
+
+    private static final float LEFT_RANG_SIZE = 0.8f;
 
     /**
-     * Sentinel value for no current active pointer. Used by {@link #mActivePointerId}.
+     * 负值表示当前无活动指针
      */
     private static final int INVALID_POINTER = -1;
 
     /**
-     * Indicates that any drawers are in an idle, settled state. No animation is in progress.
+     * 表示当前滑动闲置
      */
     public static final int STATE_IDLE = ViewDragHelper.STATE_IDLE;
 
     /**
-     * Indicates that a drawer is currently being dragged by the user.
+     * 表示当前正被用户拖动
      */
     public static final int STATE_DRAGGING = ViewDragHelper.STATE_DRAGGING;
 
     /**
-     * Indicates that a drawer is in the process of settling to a final position.
+     * 表示当前正被放置在最终位置
      */
     public static final int STATE_SETTLING = ViewDragHelper.STATE_SETTLING;
 
     /**
-     * Minimum velocity that will be detected as a fling
+     * 最小检测速度
      */
-    private static final int MIN_FLING_VELOCITY = 600;
+    private static final int MIN_FLING_VELOCITY = 200;
 
     @IntDef({STATE_IDLE, STATE_DRAGGING, STATE_SETTLING})
     @Retention(RetentionPolicy.SOURCE)
@@ -175,7 +179,7 @@ public class ClearScreenLayout extends ViewGroup {
         if (slideOffset == lp.onScreen) {
             return;
         }
-
+        Log.e(TAG, "setDragViewOffset: " + slideOffset);
         lp.onScreen = slideOffset;
         dispatchOnDragging(dragView, slideOffset);
     }
@@ -244,15 +248,35 @@ public class ClearScreenLayout extends ViewGroup {
 
     @Override
     protected void onLayout(boolean changed, int l, int t, int r, int b) {
+        final int width = r - l;
         for (int i = 0; i < getChildCount(); i++) {
             View child = getChildAt(i);
             if (child.getVisibility() == View.GONE) {
                 continue;
             }
             final LayoutParams lp = (LayoutParams) child.getLayoutParams();
-            child.layout(lp.leftMargin, lp.topMargin,
-                    lp.leftMargin + child.getMeasuredWidth(),
-                    lp.topMargin + child.getMeasuredHeight());
+            if (isContentView(child)) {
+                child.layout(lp.leftMargin, lp.topMargin,
+                        lp.leftMargin + child.getMeasuredWidth(),
+                        lp.topMargin + child.getMeasuredHeight());
+            } else {
+                final int childWidth = child.getMeasuredWidth();
+                final int childHeight = child.getMeasuredHeight();
+                int childLeft;
+
+                final float newOffset;
+                childLeft = width - (int) (childWidth * lp.onScreen);
+                newOffset = (float) (width - childLeft) / childWidth;
+
+                child.layout(childLeft, lp.topMargin,
+                        childLeft + childWidth,
+                        lp.topMargin + childHeight);
+
+                boolean changeOffset = newOffset != lp.onScreen;
+                if (changeOffset) {
+                    setDragViewOffset(child, newOffset);
+                }
+            }
         }
     }
 
@@ -422,38 +446,41 @@ public class ClearScreenLayout extends ViewGroup {
 
         @Override
         public void onViewReleased(@NonNull View releasedChild, float xvel, float yvel) {
-            int childLeft = releasedChild.getLeft();
-            //int left = xvel < 0 || (xvel == 0 && offset > 0.3f) ? width - childWidth : width;
+            int width = getWidth();
+            int childWidth = releasedChild.getWidth();
+            float offset = getDragViewOffset(releasedChild);
             //当手指在x轴上滑动的速度足够快时，直接slide,xvel < 0 往左滑，xvel > 0往右滑
             if (DEBUG) {
-                Log.e(TAG, "onViewReleased: " + xvel);
+                Log.e(TAG,
+                        "onViewReleased: " + xvel + ":" + offset + ":" + isSlideOut(releasedChild));
             }
+            int left;
             if (isSlideOut(releasedChild)) {
-                if (xvel < 0 && xvel < -X_VEL) {
-                    mDragger.settleCapturedViewAt(
-                            ((LayoutParams) releasedChild.getLayoutParams()).getMarginStart(), 0);
+                if (xvel > X_VEL) {
+                    left = width - childWidth;
+                } else if (xvel < -X_VEL) {
+                    left = width - childWidth;
                 } else {
-                    if (childLeft > getWidth() * 4 / 5) {
-                        mDragger.settleCapturedViewAt(getWidth(), 0);
+                    if (offset > RIGHT_RANG_SIZE) {
+                        left = width - childWidth;
                     } else {
-                        mDragger.settleCapturedViewAt(
-                                ((LayoutParams) releasedChild.getLayoutParams()).getMarginStart(),
-                                0);
+                        left = width;
                     }
                 }
             } else {
                 if (xvel > X_VEL) {
-                    mDragger.settleCapturedViewAt(getWidth(), 0);
+                    left = width;
+                } else if (xvel < -X_VEL) {
+                    left = width - childWidth;
                 } else {
-                    if (childLeft > getWidth() / 5) {
-                        mDragger.settleCapturedViewAt(getWidth(), 0);
+                    if (offset < LEFT_RANG_SIZE) {
+                        left = width;
                     } else {
-                        mDragger.settleCapturedViewAt(
-                                ((LayoutParams) releasedChild.getLayoutParams()).getMarginStart(),
-                                0);
+                        left = width - childWidth;
                     }
                 }
             }
+            mDragger.settleCapturedViewAt(left, releasedChild.getTop());
             invalidate();
         }
 
@@ -506,7 +533,7 @@ public class ClearScreenLayout extends ViewGroup {
 
         public boolean isSlideOut;
 
-        public float onScreen;
+        public float onScreen = 1;
 
         public LayoutParams(Context c, AttributeSet attrs) {
             super(c, attrs);
