@@ -8,34 +8,26 @@
     <FrameLayout
         android:id="@+id/container1"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#55000000">
+        android:layout_height="match_parent">
 
-        <TextView
+        <ImageView
             android:id="@+id/content"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="我是内容布局"
-            android:textColor="@color/black" />
-
-        <TextView
-            android:layout_gravity="end"
-            android:background="#5500ff00"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:textColor="@color/black"
-            android:gravity="center"
-            android:layout_width="200dp"
-            android:text="end edge range"
-            android:layout_height="match_parent" />
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:layout_gravity="center" />
 
     </FrameLayout>
 
+    <FrameLayout
+        android:background="#80000000"
+        android:id="@+id/mask"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
     <RelativeLayout
         android:id="@+id/container2"
-        android:layout_marginStart="30dp"
+        android:layout_marginStart="100dp"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_dragEnable="true">

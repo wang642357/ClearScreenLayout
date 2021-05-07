@@ -17,10 +17,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        TextView tiktokLive = findViewById(R.id.tiktok);
         TextView viewpage2 = findViewById(R.id.viewpage2);
         TextView normal = findViewById(R.id.normal);
-        tiktokLive.setOnClickListener(this);
         viewpage2.setOnClickListener(this);
         normal.setOnClickListener(this);
     }
@@ -28,15 +26,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onClick(View v) {
         int id = v.getId();
-        if (id == R.id.tiktok) {
-            Intent intent = new Intent(MainActivity.this, TikTokLiveActivity.class);
-            startActivity(intent);
-        } else if (id == R.id.viewpage2) {
-            Intent intent = new Intent(MainActivity.this, ViewPager2Activity.class);
-            startActivity(intent);
-        } else if (id == R.id.normal) {
-            Intent intent = new Intent(MainActivity.this, NormalActivity.class);
-            startActivity(intent);
-        }
+         if (id == R.id.viewpage2) {
+             Intent intent = new Intent(MainActivity.this, ViewPager2Activity.class);
+             startActivity(intent);
+         } else if (id == R.id.normal) {
+             Intent intent = new Intent(MainActivity.this, NormalActivity.class);
+             startActivity(intent);
+         }
     }
 }

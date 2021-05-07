@@ -4,17 +4,6 @@
     android:orientation="vertical"
     android:layout_height="match_parent">
 
-
-    <TextView
-        android:id="@+id/tiktok"
-        android:layout_width="match_parent"
-        android:padding="15dp"
-        android:text="TikTok Live"
-        android:textStyle="bold"
-        android:textSize="18sp"
-        android:textColor="@color/black"
-        android:layout_height="wrap_content" />
-
     <View
         android:layout_width="match_parent"
         android:background="#ededed"
