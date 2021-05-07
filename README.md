@@ -2,6 +2,10 @@
 
 一个支持左右拖动清屏的Android控件ClearScreenLayout，仿抖音直播的清屏效果，通过`ViewDragHelper`处理遮罩层滑动事件，扩展`EdgeSize`属性实现空白区域拖动功能。<br />
 支持ViewPager2，目前只支持从往右滑出
+## 效果图
+
+<img src="https://github.com/wang642357/ClearScreenLayout/blob/main/image/Video_20210507_052300_845.gif" height="650"/>
+
 ## 导入
 ### 在你的项目Project下的build.gradle中添加：
 
