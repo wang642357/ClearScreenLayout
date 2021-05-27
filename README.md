@@ -20,7 +20,7 @@ allprojects {
 ### 添加依赖：
 ```
 dependencies {
-    implementation 'com.github.wang642357:ClearScreenLayout:v1.0.0'
+    implementation 'com.github.wang642357:ClearScreenLayout:v1.1.0'
 }
 ```
 ## 使用方法
