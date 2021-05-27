@@ -36,6 +36,18 @@ public class NormalActivity extends AppCompatActivity {
         ClearScreenLayout container = findViewById(R.id.clear_screen);
         FrameLayout mask = findViewById(R.id.mask);
         mContent = findViewById(R.id.content);
+        findViewById(R.id.open).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                container.open();
+            }
+        });
+        findViewById(R.id.close).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                container.close();
+            }
+        });
         container.addDragListener(new ClearScreenLayout.DragListener() {
             @Override
             public void onDragging(@NonNull View dragView, float slideOffset) {

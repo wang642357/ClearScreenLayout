@@ -3,7 +3,6 @@ package com.wjx.android.clearscreen;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,8 +24,6 @@ import androidx.core.view.ViewCompat;
 public class ClearScreenLayout extends ViewGroup {
 
     private static final String TAG = "ClearScreenLayout";
-
-    private static final boolean DEBUG = true;
 
     private final ViewDragHelper mViewDragHelper;
 
@@ -163,6 +160,30 @@ public class ClearScreenLayout extends ViewGroup {
         mListeners.remove(listener);
     }
 
+    public void open() {
+        View draggerChild = findDraggerChild();
+        if (!isSlideOut(draggerChild)) {
+            return;
+        }
+        mViewDragHelper.smoothSlideViewTo(draggerChild, getWidth() - draggerChild.getWidth(),
+                draggerChild.getTop());
+        invalidate();
+    }
+
+    public void close() {
+        View draggerChild = findDraggerChild();
+        if (isSlideOut(draggerChild)) {
+            return;
+        }
+        mViewDragHelper.smoothSlideViewTo(draggerChild, getWidth(), draggerChild.getTop());
+        invalidate();
+    }
+
+    public boolean isOpen() {
+        View draggerChild = findDraggerChild();
+        return isSlideOut(draggerChild);
+    }
+
     void setDragViewOffset(View dragView, float slideOffset) {
         final LayoutParams lp = (LayoutParams) dragView.getLayoutParams();
         if (slideOffset == lp.onScreen) {
@@ -223,11 +244,17 @@ public class ClearScreenLayout extends ViewGroup {
         }
         setMeasuredDimension(getDefaultSize(0, widthMeasureSpec),
                 getDefaultSize(0, heightMeasureSpec));
+        boolean hasDraggerView = false;
         for (int i = 0; i < getChildCount(); i++) {
             View child = getChildAt(i);
             if (child.getVisibility() == View.GONE) {
                 continue;
             }
+            final LayoutParams lp = (LayoutParams) child.getLayoutParams();
+            if (lp.isDrag && hasDraggerView) {
+                throw new IllegalStateException("暂不支持添加多个可拖动的child");
+            }
+            hasDraggerView = lp.isDrag;
             measureChildWithMargins(child, widthMeasureSpec, 0, heightMeasureSpec, 0);
         }
     }
@@ -433,18 +460,8 @@ public class ClearScreenLayout extends ViewGroup {
             int width = getWidth();
             int childWidth = releasedChild.getWidth();
             float offset = getDragViewOffset(releasedChild);
-            if (DEBUG) {
-                Log.e(TAG,
-                        "onViewReleased: " + xvel + ":" + offset + ":" + isSlideOut(releasedChild));
-            }
-            int left;
-            if (isSlideOut(releasedChild)) {
-                left = xvel < 0 || (xvel == 0 && offset > RIGHT_RANG_SIZE) ? width - childWidth
-                        : width;
-            } else {
-                left = xvel < 0 || (xvel == 0 && offset < LEFT_RANG_SIZE) ? width
-                        : width - childWidth;
-            }
+            float v = isSlideOut(releasedChild) ? RIGHT_RANG_SIZE : LEFT_RANG_SIZE;
+            int left = xvel < 0 || (xvel == 0 && offset > v) ? width - childWidth : width;
             mDragger.settleCapturedViewAt(left, releasedChild.getTop());
             invalidate();
         }
