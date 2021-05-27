@@ -53,8 +53,13 @@ dependencies {
 
 </com.wjx.android.clearscreen.ClearScreenLayout>
 ```
-### 添加监听事件
+### Java方法
 ```java
+  //打开
+  clearScreenLayout.open();
+  //关闭
+  clearScreenLayout.close();
+  //添加监听事件
   clearScreenLayout.addDragListener(new ClearScreenLayout.DragListener() {
             @Override
             public void onDragging(@NonNull View dragView, float slideOffset) {
